@@ -1,0 +1,76 @@
+# version: "3.9"
+
+services:
+  haproxy:
+    image: haproxy:2.8
+    container_name: haproxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./certs:/etc/ssl/private:ro
+    depends_on:
+      - keycloak
+      - noco
+    networks:
+      - internal
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpass
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1
+    container_name: keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: adminpass
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - internal
+
+  noco:
+    image: nocodb/nocodb:latest
+    container_name: noco
+    environment:
+      NC_PUBLIC_URL: http://localhost
+      NC_OAUTH2_ALLOW_PUBLIC_LOGIN: true
+    env_file:
+      - ./noco/.env
+    volumes:
+      - ./noco/data:/usr/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
