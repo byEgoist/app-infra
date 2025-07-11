@@ -1,5 +1,3 @@
-# version: "3.9"
-
 services:
   haproxy:
     image: haproxy:2.8
@@ -12,7 +10,7 @@ services:
       - ./certs:/etc/ssl/private:ro
     depends_on:
       - keycloak
-      - noco
+      - nocodb
     networks:
       - internal
 
@@ -26,7 +24,7 @@ services:
       - ./postgres/data:/var/lib/postgresql/data
       - ./postgres/init-scripts:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin"]
+      test: [ "CMD-SHELL", "pg_isready -U admin" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -44,26 +42,33 @@ services:
       KC_DB_URL_HOST: postgres
       KC_DB_USERNAME: admin
       KC_DB_PASSWORD: adminpass
+
+      KC_HOSTNAME: redesigned-funicular-wpr46r465x7h97wv-80.app.github.dev
+      KC_HOSTNAME_PORT: 443
+      KC_PROXY: edge
+      KC_HTTP_ENABLED: "true"
+      KC_HTTPS_ENABLED: "true"
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+      - ./keycloak/data:/opt/keycloak/data
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "8080:8080"
+    # ports:
+    #   - "8080:8080"
     networks:
       - internal
 
-  noco:
+  nocodb:
     image: nocodb/nocodb:latest
-    container_name: noco
+    container_name: nocodb
     environment:
-      NC_PUBLIC_URL: http://localhost
+      NC_PUBLIC_URL: https://redesigned-funicular-wpr46r465x7h97wv-80.app.github.dev
       NC_OAUTH2_ALLOW_PUBLIC_LOGIN: true
     env_file:
-      - ./noco/.env
+      - ./nocodb/.env
     volumes:
-      - ./noco/data:/usr/app/data
+      - ./nocodb/data:/usr/app/data
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,4 +78,3 @@ services:
 networks:
   internal:
     driver: bridge
-

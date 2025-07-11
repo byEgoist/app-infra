@@ -6,14 +6,15 @@
       "clientId": "nococlient",
       "secret": "nocosecret",
       "protocol": "openid-connect",
-      "webOrigins": ["http://localhost"],
+      "webOrigins": [
+        "https://redesigned-funicular-wpr46r465x7h97wv-80.app.github.dev/"
+      ],
       "publicClient": false,
       "redirectUris": [
-        "https://localhost/*",
-	"http://localhost/*",
-	"http://localhost/"
+        "https://redesigned-funicular-wpr46r465x7h97wv-80.app.github.dev/*",
+        "https://redesigned-funicular-wpr46r465x7h97wv-80.app.github.dev/"
       ],
-     "directAccessGrantsEnabled": true
+      "directAccessGrantsEnabled": true
     }
   ],
   "users": [
@@ -29,4 +30,3 @@
     }
   ]
 }
-

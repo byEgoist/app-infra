@@ -1,3 +1,2 @@
--- CREATE USER admin WITH ENCRYPTED PASSWORD 'adminpass';
 CREATE DATABASE noco OWNER admin;
 CREATE DATABASE keycloak OWNER admin;
